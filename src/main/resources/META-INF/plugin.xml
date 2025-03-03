@@ -1,0 +1,12 @@
+<idea-plugin>
+    <id>com.example.chatplugin</id>
+    <name>deno</name>
+    <version>1.0</version>
+    <vendor email="youremail@example.com">Your Name</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="ChatWindow" factoryClass="com.example.chatplugin.ChatToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

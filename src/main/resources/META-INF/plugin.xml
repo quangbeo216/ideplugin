@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.example.chatplugin</id>
-    <name>deno</name>
+    <name>ChatPlugin</name>
     <version>1.0</version>
     <vendor email="youremail@example.com">Your Name</vendor>
 

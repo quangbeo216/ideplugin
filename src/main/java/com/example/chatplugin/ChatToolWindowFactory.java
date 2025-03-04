@@ -32,10 +32,12 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
     private EditorTextField editorTextField;
     boolean isDark;
     JButton sendButton;
+    JButton reloadButton;
     JTextArea chatArea;
     JBTextField inputField;
     JPanel mainPanel;
-    ComboBox<String> comboBox;
+    ComboBox<String> comboBoxCat;
+    ComboBox<String> comboBoxTitle;
     JTextField textField;
 
     public ChatToolWindowFactory() {
@@ -103,7 +105,7 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
         chatArea.setForeground(JBColor.WHITE);
         JBScrollPane scrollPane = new JBScrollPane(chatArea);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
-        
+
         footerView();
         addSelectCategory();
 
@@ -139,20 +141,34 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
     }
 
     private void footerView() {
-
+        JPanel bottomPanelTop = new JPanel(new BorderLayout());
         JPanel bottomPanel = new JPanel(new BorderLayout());
 
-        comboBox = new ComboBox<>();
-        comboBox.addItem("Option 1");
-        comboBox.addItem("Option 2");
-        comboBox.addItem("Option 3");
-        bottomPanel.add(comboBox, BorderLayout.BEFORE_FIRST_LINE);
+        comboBoxCat = new ComboBox<>();
+        comboBoxCat.addItem("Option 22");
+        comboBoxCat.addItem("Option 2");
+        comboBoxCat.addItem("Option 3");
+        bottomPanelTop.add(comboBoxCat,BorderLayout.BEFORE_LINE_BEGINS);
+
+        comboBoxTitle = new ComboBox<>();
+        comboBoxTitle.addItem("Option 11");
+        comboBoxTitle.addItem("Option 2");
+        comboBoxTitle.addItem("Option 3");
+        bottomPanelTop.add(comboBoxTitle,BorderLayout.CENTER);
+
+        reloadButton = new JButton("reload");
+        bottomPanelTop.add(reloadButton,BorderLayout.AFTER_LINE_ENDS);
+
+        JPanel bottomPanelBottom = new JPanel(new BorderLayout());
 
         textField = new JTextField(15);
-        bottomPanel.add(textField,BorderLayout.CENTER);
+        bottomPanelBottom.add(textField,BorderLayout.CENTER);
 
         sendButton = new JButton("Submit");
-        bottomPanel.add(sendButton, BorderLayout.EAST);
+        bottomPanelBottom.add(sendButton, BorderLayout.EAST);
+
+        bottomPanel.add(bottomPanelTop,BorderLayout.AFTER_LINE_ENDS);
+        bottomPanel.add(bottomPanelBottom,BorderLayout.SOUTH);
 
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
     }
@@ -174,7 +190,7 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
     private void addSelectCategory() {
         // Add ItemListener
-        comboBox.addItemListener(new ItemListener() {
+        comboBoxCat.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {

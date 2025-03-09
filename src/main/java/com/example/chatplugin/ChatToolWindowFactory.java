@@ -71,8 +71,6 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 		jsonResponse = jsonResponse.replace("\\r", "\n");
 		System.out.println(jsonResponse);
 		// Giả lập danh sách snippet
-
-		getCategory();
 		// Lấy theme hiện tại
 		EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
 
@@ -136,9 +134,11 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
 		scrollPane.setBorder(new EmptyBorder(0, 0, 20, 0));
 		mainPanel.add(scrollPane, BorderLayout.CENTER);
+		getCategory();
 		addSelectCategory();
 
 		addSendAction();
+		reloadButon();
 		toolWindow.getComponent().add(mainPanel, BorderLayout.CENTER);
 		this.toolWindow = toolWindow;
 		this.project = project;
@@ -159,10 +159,16 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 		JSONArray data = jsonResponse.getJSONArray("data");
 
 		// Duyệt qua các phần tử trong data
+		snippets.clear();
 		snippets.put("Category ---", 0);
 		for (int i = 0; i < data.length(); i++) {
 			JSONObject category = data.getJSONObject(i);
 			snippets.put(category.getString("name"), category.getInt("id"));
+		}
+
+		comboBoxCat.removeAllItems();
+		for (Map.Entry<String, Integer> entry : snippets.entrySet()) {
+			comboBoxCat.addItem(entry.getKey());
 		}
 	}
 
@@ -288,6 +294,15 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					System.out.println("Selected: " + e.getItem());
 				}
+			}
+		});
+	}
+
+	private void reloadButon(){
+		reloadButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getCategory();
 			}
 		});
 	}

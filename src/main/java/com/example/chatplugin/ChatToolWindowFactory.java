@@ -61,7 +61,7 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
 	public ChatToolWindowFactory() {
 
-		apiUrl = "http://127.0.0.1:8000/api/"; // Thay URL API của bạn
+		apiUrl = "http://plugin.quangbeo216.com/api/"; // Thay URL API của bạn
 		String jsonResponse = getJsonResponse(apiUrl);
 		// jsonResponse = jsonResponse.replace("\n", "<br>");
 		String abc = """
@@ -108,6 +108,9 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		System.out.println(response.toString());
+
 		return response.toString();
 	}
 
@@ -152,155 +155,71 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
 	private void getCategory() {
 		String urlString = apiUrl + "getListCategory";
-		try {
-			URL url = new URL(urlString);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Content-Type", "application/json");
-			conn.setDoOutput(true);
-			int responseCode = conn.getResponseCode();
+		JSONObject jsonResponse = new JSONObject(getJsonResponse(urlString));
+		JSONArray data = jsonResponse.getJSONArray("data");
 
-			if (responseCode == HttpURLConnection.HTTP_OK) { // 200
-				BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				String inputLine;
-				StringBuilder response = new StringBuilder();
-
-				while ((inputLine = in.readLine()) != null) {
-					response.append(inputLine);
-				}
-
-				in.close();
-				JSONObject jsonResponse = new JSONObject(response.toString());
-				JSONArray data = jsonResponse.getJSONArray("data");
-
-				// Duyệt qua các phần tử trong data
-				snippets.put("Category ---", 0);
-				for (int i = 0; i < data.length(); i++) {
-					JSONObject category = data.getJSONObject(i);
-					snippets.put(category.getString("name"), category.getInt("id"));
-				}
-
-				System.out.println("Response: " + response.toString());
-			} else {
-				System.out.println("GET request failed. Response Code: " + responseCode);
-			}
-
-			conn.disconnect();
-		} catch (IOException e) {
-			return;
+		// Duyệt qua các phần tử trong data
+		snippets.put("Category ---", 0);
+		for (int i = 0; i < data.length(); i++) {
+			JSONObject category = data.getJSONObject(i);
+			snippets.put(category.getString("name"), category.getInt("id"));
 		}
 	}
 
 	public void getListTitleNote(int id) {
 		String urlString = apiUrl + "getListNoteTitle/" + id;
-		try {
-			URL url = new URL(urlString);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Content-Type", "application/json");
-			conn.setDoOutput(true);
-			int responseCode = conn.getResponseCode();
 
-			if (responseCode == HttpURLConnection.HTTP_OK) { // 200
-				BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				String inputLine;
-				StringBuilder response = new StringBuilder();
-
-				while ((inputLine = in.readLine()) != null) {
-					response.append(inputLine);
-				}
-				in.close();
-
-				// Chuyển đổi nội dung JSON thành JSONObject
-				JSONObject jsonResponse = new JSONObject(response.toString());
-
-				// Lấy trường 'data' từ JSON response
-				JSONArray data = jsonResponse.getJSONArray("data");
-
-				// Duyệt qua các phần tử trong data
-				snippetTitleBlock.clear();
-				snippetTitleBlock.put("---", 0);
-				for (int i = 0; i < data.length(); i++) {
-					JSONObject category = data.getJSONObject(i);
-					snippetTitleBlock.put(category.getString("title") + " " + category.getInt("id"), category.getInt("id"));
-				}
-
-				comboBoxTitle.removeAllItems();
-
-				for (Map.Entry<String, Integer> entry : snippetTitleBlock.entrySet()) {
-					System.out.println(entry.getKey());
-					comboBoxTitle.addItem(entry.getKey());  // Add only the String part (key)
-				}
-				// Hiển thị nội dung JSON
-				System.out.println("Response: " + response.toString());
-			} else {
-				System.out.println("GET request failed. Response Code: " + responseCode);
-			}
-
-			conn.disconnect();
-		} catch (IOException e) {
-			return;
+		JSONObject jsonResponse = new JSONObject(getJsonResponse(urlString));
+		JSONArray data = jsonResponse.getJSONArray("data");
+		snippetTitleBlock.clear();
+		snippetTitleBlock.put("---", 0);
+		for (int i = 0; i < data.length(); i++) {
+			JSONObject category = data.getJSONObject(i);
+			snippetTitleBlock.put(category.getString("title") + " " + category.getInt("id"), category.getInt("id"));
 		}
+
+		comboBoxTitle.removeAllItems();
+
+		for (Map.Entry<String, Integer> entry : snippetTitleBlock.entrySet()) {
+			System.out.println(entry.getKey());
+			comboBoxTitle.addItem(entry.getKey());
+		}
+
 	}
 
 
-	public void getContentNote(int id) {
-		String urlString = apiUrl + "getNoteContent/" + 1;
-		try {
-			URL url = new URL(urlString);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Content-Type", "application/json");
-			conn.setDoOutput(true);
-			int responseCode = conn.getResponseCode();
+	public void getContentNote(int id,String selectedSnippet) {
+		String urlString = apiUrl + "getNoteContent/" + id;
+		JSONObject jsonResponse = new JSONObject(getJsonResponse(urlString));
+		JSONArray data = jsonResponse.getJSONArray("data");
 
-			if (responseCode == HttpURLConnection.HTTP_OK) { // 200
-				BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				String inputLine;
-				StringBuilder response = new StringBuilder();
+		for (int i = 0; i < data.length(); i++) {
+			JSONObject category = data.getJSONObject(i);
+			System.out.println(category.getString("content"));
 
-				while ((inputLine = in.readLine()) != null) {
-					response.append(inputLine);
-				}
-				in.close();
+			int width = this.toolWindow.getComponent().getWidth();
+			EditorTextField editorTextField = new MyEditorTextField(category.getString("content").trim(),this.project,width);
+			JLabel newLabel = new JLabel(selectedSnippet.trim());
+			newLabel.setHorizontalAlignment(SwingConstants.LEFT); // Căn từ trên xuống dưới
 
-				JSONObject jsonResponse = new JSONObject(response.toString());
-				JSONArray data = jsonResponse.getJSONArray("data");
+			System.out.println(editorTextField.getHeight());
 
-				for (int i = 0; i < data.length(); i++) {
-					JSONObject category = data.getJSONObject(i);
-					System.out.println(category.getString("content"));
+			contentPanel.add(newLabel);
+			contentPanel.add(editorTextField);
 
-					int width = this.toolWindow.getComponent().getWidth();
-					EditorTextField editorTextField = new MyEditorTextField(category.getString("content").trim(),this.project,width);
-					JLabel newLabel = new JLabel("xxxcvcxvcv");
-					newLabel.setHorizontalAlignment(SwingConstants.LEFT); // Căn từ trên xuống dưới
+			contentPanel.revalidate();
+			contentPanel.repaint();
+			mainPanel.revalidate();
+			mainPanel.repaint();
 
-					System.out.println(editorTextField.getHeight());
+			scrollPane.revalidate();
+			scrollPane.repaint();
 
-					contentPanel.add(newLabel);
-					contentPanel.add(editorTextField);
+			SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum()));
 
-					contentPanel.revalidate();
-					contentPanel.repaint();
-					mainPanel.revalidate();
-					mainPanel.repaint();
-
-					scrollPane.revalidate();
-					scrollPane.repaint();
-
-					SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum()));
-
-				}
-				System.out.println("Response: " + response.toString());
-			} else {
-				System.out.println("GET request failed. Response Code: " + responseCode);
-			}
-
-			conn.disconnect();
-		} catch (IOException e) {
-			return;
 		}
+		//System.out.println("Response: " + response.toString());
+
 	}
 
 
@@ -320,9 +239,10 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
 		comboBoxTitle = new ComboBox<>();
 		comboBoxTitle.addActionListener(e -> {
-			String selectedSnippet = (String) comboBoxCat.getSelectedItem();
-			if (selectedSnippet != null) {
-				getContentNote(Integer.parseInt(String.valueOf(snippets.get(selectedSnippet))));
+			String selectetTitle = (String) comboBoxTitle.getSelectedItem();
+			System.out.println("selectetTitle"+selectetTitle);
+			if (selectetTitle != null) {
+				getContentNote(Integer.parseInt(String.valueOf(snippetTitleBlock.get(selectetTitle))),selectetTitle);
 			}
 		});
 		bottomPanelTop.add(comboBoxTitle, BorderLayout.CENTER);

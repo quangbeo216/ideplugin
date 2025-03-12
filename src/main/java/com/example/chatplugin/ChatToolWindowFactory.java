@@ -2,7 +2,10 @@ package com.example.chatplugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.ex.EditorEx;
@@ -62,16 +65,6 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 	public ChatToolWindowFactory() {
 
 		apiUrl = "http://plugin.quangbeo216.com/api/"; // Thay URL API của bạn
-		String jsonResponse = getJsonResponse(apiUrl);
-		// jsonResponse = jsonResponse.replace("\n", "<br>");
-		String abc = """
-				%s
-				""".formatted(jsonResponse).stripIndent();
-		jsonResponse = jsonResponse.replace("\\n", "\n");
-		jsonResponse = jsonResponse.replace("\\r", "\n");
-		System.out.println(jsonResponse);
-		// Giả lập danh sách snippet
-		// Lấy theme hiện tại
 		EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
 
 		// Xác định nền light/dark
@@ -115,6 +108,7 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
 	@Override
 	public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+		JTabbedPane tabbedPane = new JTabbedPane();
 		mainPanel = new JPanel(new BorderLayout());
 		mainPanel.setBorder(null); // Loại bỏ border
 
@@ -139,7 +133,41 @@ public class ChatToolWindowFactory implements ToolWindowFactory {
 
 		addSendAction();
 		reloadButon();
-		toolWindow.getComponent().add(mainPanel, BorderLayout.CENTER);
+
+
+		// Add tabs to the JTabbedPane
+		tabbedPane.addTab("Tab 1", mainPanel);
+
+		JPanel panel2 = new MyPanel();
+		panel2.setBorder(null);
+		panel2.setLayout(new FlowLayout());
+		panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
+		// Create a multi-line document
+
+		EditorTextField editorTextField = new EditorTextField();
+		editorTextField.setOneLineMode(false);
+		editorTextField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					e.consume(); // Ngăn sự kiện mặc định
+					Document document = editorTextField.getDocument();
+					int offset = editorTextField.getCaretModel().getOffset();
+					WriteCommandAction.runWriteCommandAction(null, () -> {
+						try {
+							document.insertString(offset, "\n");
+							editorTextField.getCaretModel().moveToOffset(offset + 1);
+						} catch (Exception ignored) {
+						}
+					});
+				}
+			}
+		});
+		// Add the EditorTextField to the center of the panel
+		panel2.add(editorTextField, BorderLayout.CENTER);
+
+		tabbedPane.addTab("Tab 2", panel2);
+		toolWindow.getComponent().add(tabbedPane, BorderLayout.CENTER);
 		this.toolWindow = toolWindow;
 		this.project = project;
 		toolWindow.getComponent().addComponentListener(new ComponentAdapter() {
